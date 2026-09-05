@@ -195,12 +195,37 @@ def _recommendation(group: str, score: int) -> str:
 # Batch processing
 # ---------------------------------------------------------------------------
 
+REQUIRED_CSV_FIELDS = {"age", "ldh_ratio", "ecog_ps", "stage", "extranodal_sites"}
+
+
+def _validate_csv_path(path: str) -> str:
+    """Validate CSV file path to prevent path traversal."""
+    import os
+    # Ensure the path does not contain null bytes or traversal sequences
+    if "\x00" in path:
+        raise ValueError("Path contains null bytes")
+    # Check for ".." in path components (handles both / and \\ separators)
+    normalized = path.replace("\\", "/")
+    if ".." in normalized.split("/"):
+        raise ValueError("Path traversal detected")
+    resolved = os.path.realpath(path)
+    return resolved
+
+
 def process_batch(input_csv: str, output_csv: str) -> int:
     """Process a CSV of patients and write IPI results."""
+    input_csv = _validate_csv_path(input_csv)
+    output_csv = _validate_csv_path(output_csv)
+
     with open(input_csv, mode="r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         fieldnames = list(reader.fieldnames or [])
         rows = list(reader)
+
+    # Validate required fields present
+    missing_fields = REQUIRED_CSV_FIELDS - set(fieldnames)
+    if missing_fields:
+        raise ValueError(f"Input CSV missing required fields: {missing_fields}")
 
     out_fields = fieldnames + [
         "ipi_score", "ipi_risk_group", "five_year_survival_pct",
@@ -268,6 +293,22 @@ def main(argv=None):
     bp.add_argument("-i", "--input", required=True, help="Input CSV file")
     bp.add_argument("-o", "--output", default="results.csv", help="Output CSV file")
 
+    # Audit command (enterprise supervisor)
+    ap = subparsers.add_parser("audit", help="Run supervisor audit task")
+    ap.add_argument("--task-id", default="CLI-AUDIT-01", help="Task identifier")
+    ap.add_argument("--target", default="CLI-TARGET-01", help="Target identifier")
+    ap.add_argument("--primary-metric", type=float, default=10.0, help="Primary metric")
+    ap.add_argument("--secondary-metric", type=float, default=3.0, help="Secondary metric")
+    ap.add_argument("--status", default="NOMINAL", help="Status descriptor")
+    ap.add_argument("--critical", action="store_true", help="Critical flag")
+
+    # Chat command (enterprise supervisor)
+    cp = subparsers.add_parser("chat", help="Supervisory chat query")
+    cp.add_argument("query", nargs="+", help="Query text")
+
+    # Verify audit command
+    vp = subparsers.add_parser("verify-audit", help="Verify HMAC audit trail integrity")
+
     args = parser.parse_args(argv)
 
     if args.command == "single":
@@ -279,8 +320,38 @@ def main(argv=None):
             extranodal_sites=args.extranodal_sites,
         )
         print(json.dumps(result, indent=2))
+        return 0
     elif args.command == "batch":
         process_batch(args.input, args.output)
+        return 0
+    elif args.command == "audit":
+        from agents.supervisor import SystemSupervisor
+        from agents.models import SystemTaskPayload
+        supervisor = SystemSupervisor(model_provider="mock")
+        payload = SystemTaskPayload(
+            task_id=args.task_id,
+            target_identifier=args.target,
+            primary_metric=args.primary_metric,
+            secondary_metric=args.secondary_metric,
+            status_descriptor=args.status,
+            is_critical_flag=args.critical,
+        )
+        dossier = supervisor.process_task(payload)
+        print(json.dumps(dossier.to_dict(), indent=2, default=str))
+        return 0
+    elif args.command == "chat":
+        from agents.supervisor import SystemSupervisor
+        supervisor = SystemSupervisor(model_provider="mock")
+        query = " ".join(args.query)
+        response = supervisor.query_supervisory_chat(query)
+        print(json.dumps({"response": response}, indent=2))
+        return 0
+    elif args.command == "verify-audit":
+        from agents.base import AuditLogger
+        valid = AuditLogger.verify_integrity()
+        trail_len = len(AuditLogger.get_trail())
+        print(json.dumps({"audit_valid": valid, "trail_length": trail_len}, indent=2))
+        return 0 if valid else 1
 
 
 if __name__ == "__main__":

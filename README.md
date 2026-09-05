@@ -1,7 +1,7 @@
-# Ipi Dlbcl Prognostic Index
+# IPI DLBCL Prognostic Index
 
-> **Domain:** Medical Oncology & Cancer Staging Systems  
-> **Reference Guidelines & Standards:** `AJCC Cancer Staging Manual & NCCN Clinical Practice Guidelines`
+> **Domain:** Medical Oncology & Cancer Staging Systems
+> **Reference Guidelines & Standards:** AJCC Cancer Staging Manual & NCCN Clinical Practice Guidelines
 
 <div align="center">
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 📖 What It Does
+## What It Does
 
 International Prognostic Index (IPI) for Diffuse Large B-Cell Lymphoma
 
@@ -40,14 +40,21 @@ Also calculates R-IPI (Revised IPI) groups:
   Good:      1-2 points → 4-year OS ~79%
   Poor:      3-5 points → 4-year OS ~55%
 
-Zero-dependency Python implementation.
 License: MIT
 
 ---
 
-## ⚙️ Key Capabilities & Algorithmic Modules
+## Installation
 
-### 🔬 Analytical Functions
+```bash
+pip install fastapi uvicorn pydantic pytest
+```
+
+---
+
+## Key Capabilities & Algorithmic Modules
+
+### Analytical Functions
 
 - **`calculate_ipi()`**: Calculate IPI and R-IPI scores for DLBCL.
 
@@ -61,62 +68,107 @@ Parameters:
 
 Returns:
     Dict with IPI score, risk group, R-IPI group, survival estimates.
+
 - **`process_batch()`**: Process a CSV of patients and write IPI results.
-- **`main()`** — calculates and validates main parameters.
+- **`main()`** — CLI entry point for all commands.
 
 ---
 
-## 📐 Mathematical Formulation & Logic
+## CLI Quickstart & Usage
 
-```text
-  Calculates the IPI score (0-5) and risk group for DLBCL prognosis.
-  Also calculates R-IPI (Revised IPI) groups:
-  Calculate IPI and R-IPI scores for DLBCL.
-  score = 0
-  elif score == 2:
+### 1. Single Patient Evaluation
+```bash
+python cli.py single --age 65 --ldh-ratio 1.5 --ecog-ps 1 --stage 3 --extranodal-sites 2
 ```
 
----
-
-## 💻 CLI Quickstart & Usage
-
-### 1. Guided Interactive Mode
+### 2. Batch CSV Processing
 ```bash
-python cli.py
+python cli.py batch -i patients.csv -o results.csv
 ```
 
-### 2. Direct Parameterized Evaluation
+### 3. Enterprise Supervisor Audit
 ```bash
-python cli.py --input data.csv
+python cli.py audit --task-id TASK-001 --primary-metric 15.0 --status NOMINAL
+```
+
+### 4. Supervisory Chat
+```bash
+python cli.py chat "Explain IPI scoring"
+```
+
+### 5. Verify Audit Trail
+```bash
+python cli.py verify-audit
 ```
 
 ### Parameter Reference
-- `--interactive`: Launch guided terminal interactive wizard.
-- `--input <path>`: Evaluate input from JSON or CSV specification.
-- `--json`: Output deterministic structured results in JSON format.
+- `single`: Evaluate a single patient (requires --age, --ldh-ratio, --ecog-ps, --stage, --extranodal-sites)
+- `batch`: Batch process CSV file (requires -i/--input, optional -o/--output)
+- `audit`: Run supervisor audit task
+- `chat`: Supervisory chat query
+- `verify-audit`: Verify HMAC audit trail integrity
 
-### Input Data Schema
+### Input CSV Schema (for batch processing)
 
 | Field | Description | Requirement |
 |:------|:------------|:------------|
-| `Patient_ID` | Parameter / observation metric | Required |
-| `v1` | Parameter / observation metric | Required |
-| `v2` | Parameter / observation metric | Required |
-| `v3` | Parameter / observation metric | Required |
+| `age` | Patient age in years | Required |
+| `ldh_ratio` | LDH / upper limit of normal | Required |
+| `ecog_ps` | ECOG performance status (0-4) | Required |
+| `stage` | Ann Arbor stage (1-4) | Required |
+| `extranodal_sites` | Number of extranodal disease sites | Required |
 
 ---
 
-## 🛡️ Security & Enterprise Architecture
+## Mathematical Formulation
 
-* **Zero-PHI Outbound Interceptor:** Active AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
+```
+IPI Score = Σ risk factors (0-5)
+
+Risk factors (1 point each):
+  - Age > 60
+  - LDH ratio > 1.0 (elevated)
+  - ECOG PS ≥ 2
+  - Ann Arbor Stage III or IV (≥ 3)
+  - Extranodal sites > 1
+
+IPI Risk Groups:
+  Score 0-1  → Low
+  Score 2    → Low-Intermediate
+  Score 3    → High-Intermediate
+  Score 4-5  → High
+
+R-IPI Groups:
+  Score 0    → Very Good
+  Score 1-2  → Good
+  Score 3-5  → Poor
+```
+
+---
+
+## Security & Enterprise Architecture
+
+* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
+* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation.
+* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances, Claude, GPT-4o, and deterministic test mocks.
 * **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
 * **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
 
+### Security Configuration
+
+Set the `AUDIT_SECRET_KEY` environment variable in production:
+
+```bash
+# Linux/macOS
+export AUDIT_SECRET_KEY="your-secure-random-key"
+
+# Windows
+set AUDIT_SECRET_KEY=your-secure-random-key
+```
+
 ---
 
-## 🧪 Testing & Verification
+## Testing & Verification
 
 Run the automated test suite:
 
@@ -127,14 +179,20 @@ pytest -v
 Execute high-throughput batch simulation benchmarks:
 
 ```bash
-python simulator.py --tasks 1000 --concurrency 8
+python simulator.py 1000
 ```
 
 ---
 
-## 🐳 Container Deployment
+## Container Deployment
 
 ```bash
 docker build -t ipi-dlbcl-prognostic-index .
-docker run -p 8000:8000 ipi-dlbcl-prognostic-index
+docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secure-key ipi-dlbcl-prognostic-index
+```
+
+Or using docker-compose:
+
+```bash
+AUDIT_SECRET_KEY=your-secure-key docker-compose up
 ```
