@@ -110,6 +110,7 @@
       breakdown.append(li);
     }
     result.hidden = false;
+    $("placeholder").hidden = true;
   }
   form.addEventListener("submit", event => {
     event.preventDefault();
@@ -119,12 +120,14 @@
       showResult(calculateIPI(input));
     } catch (err) {
       result.hidden = true;
+      $("placeholder").hidden = false;
       error.textContent = err.message;
     }
   });
   $("reset").addEventListener("click", () => {
     form.reset();
     result.hidden = true;
+    $("placeholder").hidden = false;
     error.textContent = "";
   });
   $("batch-file").addEventListener("change", async event => {

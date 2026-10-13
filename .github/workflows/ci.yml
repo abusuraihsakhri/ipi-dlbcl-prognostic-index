@@ -1,44 +1,44 @@
-name: Ipi Dlbcl Prognostic Index CI/CD & Security Verification
+name: IPI DLBCL CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
+
+permissions:
+  contents: read
 
 jobs:
-  test-and-audit:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
-
-    - name: Run Pytest Suite
-      env:
-        AUDIT_SECRET_KEY: ci-test-audit-key-2026
-      run: |
-        pytest -v
-
-    - name: Security SAST & Zero-PHI Audit
-      env:
-        AUDIT_SECRET_KEY: ci-test-audit-key-2026
-      run: |
-        python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
-        "
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m pip check
+      - name: Python syntax and tests
+        env:
+          AUDIT_SECRET_KEY: unit-test-only-not-production
+        run: |
+          python -m compileall -q agents ipi_dlbcl.py cli.py enrichment.py simulator.py
+          pytest -q
+      - name: Node.js syntax and browser-calculation tests
+        run: |
+          node --check web/ipi.js
+          node --test tests/test_web.cjs
+      - name: Basic static security check
+        run: |
+          if grep -R -En '(eval\\(|document\\.write\\(|innerHTML\\s*=)' web; then
+            echo "Potentially unsafe DOM pattern found"; exit 1
+          fi
