@@ -13,7 +13,7 @@
       }
       if (typeof raw === "string") {
         const clean = raw.trim();
-        const format = key === "ldh_ratio" ? /^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$/ : /^[+-]?\\d+$/;
+        const format = key === "ldh_ratio" ? /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/ : /^[+-]?\d+$/;
         if (!format.test(clean)) throw new Error(key + " must have valid numeric format");
       }
       const val = Number(raw);
