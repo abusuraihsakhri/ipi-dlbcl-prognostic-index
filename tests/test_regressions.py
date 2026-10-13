@@ -78,3 +78,40 @@ def test_api_serves_calculator_and_endpoint():
     paths = [route.path for route in app.routes]
     assert "/api/ipi" in paths
     assert "/" in paths
+
+
+def test_supervisor_api_requires_configured_token(monkeypatch):
+    from fastapi import HTTPException
+    from agents.api import require_supervisor_token
+    monkeypatch.delenv("SUPERVISOR_API_TOKEN", raising=False)
+    with pytest.raises(HTTPException) as exc:
+        require_supervisor_token(None)
+    assert exc.value.status_code == 503
+    monkeypatch.setenv("SUPERVISOR_API_TOKEN", "test-secret-only")
+    with pytest.raises(HTTPException) as exc:
+        require_supervisor_token("wrong-secret")
+    assert exc.value.status_code == 401
+    assert require_supervisor_token("test-secret-only") is None
+
+
+def test_js_python_parity_when_node_available():
+    import shutil
+    import subprocess
+    import json
+    from pathlib import Path
+    if not shutil.which("node"):
+        pytest.skip("Node.js is not installed")
+    cases = [
+        {**BASE, "age": 59, "ldh_ratio": 0.9, "ecog_ps": 0, "stage": 1, "extranodal_sites": 0},
+        {**BASE, "age": 61},
+        {**BASE, "age": 61, "ldh_ratio": 1.2},
+        {**BASE, "age": 61, "ldh_ratio": 1.2, "ecog_ps": 2},
+        {**BASE, "age": 61, "ldh_ratio": 1.2, "ecog_ps": 2, "stage": 3},
+        {**BASE, "age": 61, "ldh_ratio": 1.2, "ecog_ps": 2, "stage": 3, "extranodal_sites": 2},
+    ]
+    script = "const calc=require('./web/ipi.js').calculateIPI; let cases=JSON.parse(process.argv[1]);console.log(JSON.stringify(cases.map(calc)));" 
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(["node", "-e", script, json.dumps(cases)],cwd=root,check=True,capture_output=True,text=True)
+    js_results = json.loads(result.stdout)
+    for inp, javascript in zip(cases, js_results):
+        assert javascript == calculate_ipi(**inp)
