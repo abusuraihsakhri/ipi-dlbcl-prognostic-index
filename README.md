@@ -52,7 +52,7 @@ docker build -t ipi-dlbcl-prognostic-index .
 docker run --rm -p 8000:8000 -e AUDIT_SECRET_KEY='replace-with-a-long-random-secret' ipi-dlbcl-prognostic-index
 ```
 
-`POST /api/ipi` evaluates an IPI input object; `GET /health` checks the service. Existing audit/chat endpoints remain available but are not supported on GitHub Pages (which is static). They do not provide authenticated access controls; do not expose the API to untrusted networks without adding an authentication and authorization layer.
+`POST /api/ipi` evaluates an IPI input object; `GET /health` checks the service. Existing audit/chat endpoints remain available but are not supported on GitHub Pages (which is static). The supervisory endpoints require the server-side `SUPERVISOR_API_TOKEN` value and the matching `X-API-Token` request header. Without the environment variable these routes fail closed with HTTP 503. Use TLS and rate limiting for any internet-facing service.
 
 ## Tests
 
@@ -70,7 +70,7 @@ GitHub Actions tests Python 3.10–3.12 and the browser calculation logic with N
 - International Non-Hodgkin's Lymphoma Prognostic Factors Project. *N Engl J Med.* 1993;329:987–994. [DOI: 10.1056/NEJM199309303291402](https://doi.org/10.1056/NEJM199309303291402).
 - Sehn LH, et al. *Blood.* 2007;109:1857–1861. [DOI: 10.1182/blood-2006-08-038257](https://doi.org/10.1182/blood-2006-08-038257).
 
-Supported in current Chrome, Firefox, Safari, and Edge with modern JavaScript and File APIs. No Python-in-browser runtime is needed because the standalone JavaScript calculator implements the same five-factor algorithm.
+Requires a modern browser with JavaScript, the File API and Blob URLs (e.g., current Chrome, Firefox, Safari or Edge). No Python-in-browser runtime is needed because the standalone JavaScript calculator implements the same five-factor algorithm.
 
 ## License
 
