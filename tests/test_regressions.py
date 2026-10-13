@@ -115,3 +115,14 @@ def test_js_python_parity_when_node_available():
     js_results = json.loads(result.stdout)
     for inp, javascript in zip(cases, js_results):
         assert javascript == calculate_ipi(**inp)
+
+
+def test_checked_in_api_spec_reflects_routes_and_security():
+    import json
+    from pathlib import Path
+    spec = json.loads((Path(__file__).resolve().parents[1] / "openapi_spec.json").read_text(encoding="utf-8"))
+    assert "/api/ipi" in spec["paths"]
+    assert "JSON" in spec["paths"]["/metrics"]["get"]["responses"]["200"]["description"]
+    for route in ("/api/audit", "/api/chat", "/api/audit/logs"):
+        method = "get" if route.endswith("/logs") else "post"
+        assert spec["paths"][route][method]["security"] == [{"SupervisorToken": []}]
