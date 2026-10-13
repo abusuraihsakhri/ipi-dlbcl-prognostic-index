@@ -1,0 +1,14 @@
+.git
+.github
+.env
+.env.*
+*.py[cod]
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+tests/
+test_ipi_dlbcl.py
+results.csv
+output.csv
+.DS_Store
