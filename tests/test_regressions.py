@@ -23,7 +23,7 @@ def test_boundary_contributes_exactly_one_point(key, value):
     ("age", True), ("age", 60.5), ("ecog_ps", 2.5),
     ("stage", 3.4), ("extranodal_sites", True),
     ("ldh_ratio", float("nan")), ("ldh_ratio", float("inf")),
-    ("ldh_ratio", True), ("ldh_ratio", -1.0),
+    ("ldh_ratio", True), ("ldh_ratio", 0.0), ("ldh_ratio", -1.0),
 ])
 def test_invalid_input_is_rejected(key, value):
     with pytest.raises(ValueError):

@@ -21,7 +21,7 @@ test("all five factor boundaries and risk groups", () => {
   assert.equal(calculateIPI({...base,age:61}).ripi_group,"Good");
 });
 test("reject malformed and non-finite inputs", () => {
-  for (const value of ["",NaN,Infinity,"Infinity","NaN","not a number",null,true]) {
+  for (const value of ["",0,NaN,Infinity,"Infinity","NaN","not a number",null,true]) {
     assert.throws(()=>calculateIPI({...base,ldh_ratio:value}));
   }
   for (const [key,value] of [["age",-1],["age",20.5],["ecog_ps",5],["stage",0],["stage",2.5],["extranodal_sites",-1]]) {

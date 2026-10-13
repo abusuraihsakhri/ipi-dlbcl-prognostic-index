@@ -33,9 +33,9 @@ python cli.py single --age 65 --ldh-ratio 1.5 --ecog-ps 1 --stage 3 --extranodal
 python cli.py batch -i sample.csv -o results.csv
 ```
 
-The batch CLI preserves input columns, which may contain sensitive data. Avoid using identifiable clinical records. CSV output escapes spreadsheet formula prefixes. Invalid data rows are marked with an error; missing or duplicate headers are rejected.
+A valid LDH ratio must be positive. The batch CLI preserves input columns, which may contain sensitive data. Avoid using identifiable clinical records. CSV output escapes spreadsheet formula prefixes. Invalid data rows are marked with an error; missing or duplicate headers are rejected.
 
-The repository retains additional supervisory CLI commands: `audit`, `chat` and `verify-audit`. They use deterministic mock worker logic and must not be interpreted as real clinical surveillance, medical triage or LLM-powered analysis. Audit entries live only in the running process and are signed with HMAC-SHA256. A production deployment must set `AUDIT_SECRET_KEY`; the built-in PHI pattern filter is **not** a de-identification guarantee.
+The repository retains additional supervisory CLI commands: `audit`, `chat` and `verify-audit`. They use deterministic mock worker logic and must not be interpreted as real clinical surveillance, medical triage or model-based analysis. Non-mock model provider names are explicitly rejected. Audit entries live only in the running process and are signed with HMAC-SHA256. A production deployment must set `AUDIT_SECRET_KEY`; the built-in PHI pattern filter is **not** a de-identification guarantee.
 
 ## Local API / Docker
 

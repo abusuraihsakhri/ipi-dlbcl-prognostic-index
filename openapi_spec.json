@@ -15,7 +15,7 @@
         "summary": "Health and metadata check",
         "responses": {
           "200": {
-            "description": "System optimal"
+            "description": "JSON health and service metadata"
           }
         }
       }
@@ -32,7 +32,7 @@
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
+        "summary": "Run demonstration supervisory audit (not clinical triage)",
         "requestBody": {
           "content": {
             "application/json": {
@@ -87,7 +87,7 @@
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
+        "summary": "Return deterministic mock supervisory response (no external model)",
         "requestBody": {
           "content": {
             "application/json": {
@@ -204,7 +204,7 @@
           },
           "ldh_ratio": {
             "type": "number",
-            "minimum": 0
+            "exclusiveMinimum": 0
           },
           "ecog_ps": {
             "type": "integer",

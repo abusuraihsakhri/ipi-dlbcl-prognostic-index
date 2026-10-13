@@ -88,8 +88,8 @@ def calculate_ipi(
         raise ValueError("LDH ratio must be a finite number")
     if age < 0:
         raise ValueError("Age must be non-negative")
-    if ldh_ratio < 0:
-        raise ValueError("LDH ratio must be non-negative")
+    if ldh_ratio <= 0:
+        raise ValueError("LDH ratio must be positive")
     if ecog_ps < 0 or ecog_ps > 4:
         raise ValueError(f"ECOG PS must be 0-4, got {ecog_ps}")
     if stage < 1 or stage > 4:

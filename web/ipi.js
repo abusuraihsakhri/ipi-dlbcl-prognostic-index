@@ -25,7 +25,7 @@
       if (!Number.isSafeInteger(values[key])) throw new Error(key + " must be an integer");
     }
     if (age < 0) throw new Error("Age must be non-negative");
-    if (ldh_ratio < 0) throw new Error("LDH ratio must be non-negative");
+    if (ldh_ratio <= 0) throw new Error("LDH ratio must be positive");
     if (ecog_ps < 0 || ecog_ps > 4) throw new Error("ECOG PS must be 0-4");
     if (stage < 1 || stage > 4) throw new Error("Ann Arbor stage must be 1-4");
     if (extranodal_sites < 0) throw new Error("Extranodal sites must be non-negative");
