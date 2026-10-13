@@ -1,236 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ipi Dlbcl Prognostic Index — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>DLBCL International Prognostic Index Calculator</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17263d;background:#f4f7fb;font-size:16px}
+    *{box-sizing:border-box}
+    body{margin:0;line-height:1.5}
+    a{color:#0a4c96;text-underline-offset:3px}
+    header{background:#112d50;color:#fff;padding:2rem max(1rem,calc((100vw - 1060px)/2))}
+    header h1{font-size:clamp(1.5rem,3vw,2.15rem);line-height:1.2;margin:0 0 .4rem}
+    header p{max-width:740px;margin:0;color:#d4e4f4}
+    main{max-width:1092px;margin:auto;padding:1.5rem 1rem 3rem}
+    .intro{background:#e7f0fc;border-left:4px solid #3671ba;border-radius:6px;padding:.8rem 1rem;margin-bottom:1.3rem}
+    .layout{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,1fr);gap:1.25rem;align-items:start}
+    .panel{background:#fff;border:1px solid #d3deea;border-radius:12px;padding:1.4rem;box-shadow:0 3px 13px #1b345012}
+    h2{font-size:1.2rem;margin:0 0 1rem}
+    h3{font-size:1rem;margin:1rem 0 .5rem}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .field.full{grid-column:1/-1}
+    label{display:block;font-weight:650;font-size:.9rem;margin-bottom:.35rem}
+    small,.hint{display:block;color:#4a5a6e;font-size:.79rem}
+    input,select{width:100%;border:1px solid #8d9aad;border-radius:6px;padding:.65rem .7rem;background:white;color:#17263d;font:inherit}
+    input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #0b6ecb;outline-offset:2px}
+    button{padding:.72rem 1rem;font:inherit;font-weight:650;border-radius:7px;border:1px solid #0a4c96;cursor:pointer}
+    button.primary{background:#0a4c96;color:white}
+    button.secondary{background:white;color:#0a4c96}
+    .buttons{display:flex;gap:.65rem;margin-top:1.2rem;flex-wrap:wrap}
+    .placeholder{background:#f4f8fd;border:1px dashed #9fb4cc;padding:1.4rem;border-radius:8px;color:#42566d}
+    .score{font-size:2.6rem;font-weight:750;letter-spacing:-.05em;color:#113e76;margin:.2rem 0}
+    .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+    .stat{border:1px solid #d3deea;border-radius:8px;padding:.7rem;background:#f6f9fd}
+    .stat span{display:block;font-size:.8rem;color:#4a5a6e}
+    .stat b{display:block;font-size:1.2rem;margin-top:.15rem}
+    .factors{padding:0;list-style:none;margin:.5rem 0}
+    .factors li{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid #e5edf5;padding:.4rem 0}
+    .factors strong{font-variant-numeric:tabular-nums}
+    .note{color:#45566a;font-size:.85rem}
+    .error{color:#9e1527;font-weight:600;margin:.7rem 0}
+    .below{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem}
+    .below p{margin:.35rem 0}
+    footer{font-size:.82rem;color:#445871;padding-top:1.3rem}
+    [hidden]{display:none!important}
+    @media(max-width:760px){.layout,.below{grid-template-columns:1fr}main{padding:1rem}.panel{padding:1rem}}
+    @media(max-width:410px){.fields{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Ipi Dlbcl Prognostic Index</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
+  <header><h1>DLBCL Prognostic Index</h1><p>International Prognostic Index (IPI) and Revised IPI (R-IPI) — research and education calculator</p></header>
+  <main>
+    <div class="intro" role="note"><strong>Clinical scope:</strong> These prognostic scores are not treatment algorithms. Survival percentages are historical cohort estimates, not individual predictions. Do not enter patient identifiers or protected health information.</div>
+    <div class="layout">
+      <section class="panel" aria-labelledby="form-heading">
+        <h2 id="form-heading">Calculate an IPI score</h2>
+        <form id="ipi-form">
+          <div class="fields">
+            <div class="field"><label for="age">Age (years)</label><input id="age" type="number" min="0" step="1" required value="65"></div>
+            <div class="field"><label for="ldh_ratio">LDH / upper limit of normal</label><input id="ldh_ratio" type="number" min="0" step="any" required value="1.5"><small>1.0 is the laboratory ULN</small></div>
+            <div class="field"><label for="ecog_ps">ECOG performance status</label>
+              <select id="ecog_ps" required><option value="0">0 — Fully active</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+            <div class="field"><label for="stage">Ann Arbor stage</label><select id="stage" required><option value="1">I</option><option value="2">II</option><option value="3" selected>III</option><option value="4">IV</option></select></div>
+            <div class="field full"><label for="extranodal_sites">Number of extranodal disease sites</label><input id="extranodal_sites" type="number" min="0" step="1" required value="2"><small>Count involved extranodal sites, not lesions</small></div>
+          </div>
+          <p id="form-error" class="error" role="alert" aria-live="assertive"></p>
+          <div class="buttons"><button type="submit" class="primary">Calculate IPI</button><button id="reset" type="button" class="secondary">Reset</button></div>
+        </form>
+      </section>
+      <section class="panel" aria-labelledby="result-heading">
+        <h2 id="result-heading">Prognostic stratification</h2>
+        <div id="result" hidden aria-live="polite">
+          <div class="hint">Total adverse risk factors</div><div id="score" class="score"></div>
+          <div class="result-grid">
+            <div class="stat"><span>Original IPI group</span><b id="ipi-group"></b></div>
+            <div class="stat"><span>Revised IPI group</span><b id="ripi-group"></b></div>
+            <div class="stat"><span>Original IPI, historical 5-year OS</span><b id="ipi-os"></b></div>
+            <div class="stat"><span>R-IPI, historical 4-year OS</span><b id="ripi-os"></b></div>
+          </div>
+          <h3>Risk factor breakdown</h3><ul id="breakdown" class="factors"></ul>
+          <p class="note">The original IPI OS estimates derive from patients treated in the 1980s, before rituximab. R-IPI OS estimates derive from an R-CHOP cohort. Results are not directly comparable.</p>
         </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
+        <div id="placeholder" class="placeholder">Enter the five clinical variables and select <strong>Calculate IPI</strong>. No server connection is required.</div>
+      </section>
     </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
+    <div class="below">
+      <section class="panel" aria-labelledby="batch-heading">
+        <h2 id="batch-heading">Batch CSV calculator</h2>
+        <p class="note">Process up to 10,000 rows (maximum 2 MB). Required headers: <code>age,ldh_ratio,ecog_ps,stage,extranodal_sites</code>. Results download as a CSV with row numbers and group labels; source columns are not copied.</p>
+        <label for="batch-file">Choose a CSV file</label><input type="file" id="batch-file" accept=".csv,text/csv">
+        <p id="batch-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="panel" aria-labelledby="refs-heading">
+        <h2 id="refs-heading">Methods and references</h2>
+        <p>Five factors contribute one point each: age >60, LDH above ULN, ECOG ≥2, Ann Arbor III/IV, and >1 extranodal site.</p>
+        <p class="note">Original IPI: 0–1 low; 2 low-intermediate; 3 high-intermediate; 4–5 high. R-IPI: 0 very good; 1–2 good; 3–5 poor.</p>
+        <p class="note"><a href="https://doi.org/10.1056/NEJM199309303291402" target="_blank" rel="noopener noreferrer">International NHL Prognostic Factors Project, NEJM (1993)</a> · <a href="https://doi.org/10.1182/blood-2006-08-038257" target="_blank" rel="noopener noreferrer">Sehn et al., Blood (2007)</a></p>
+      </section>
     </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Ipi Dlbcl Prognostic Index Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "ipi-dlbcl-prognostic-index",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+    <footer>All calculations and CSV processing take place locally in the browser. No cookies, analytics, accounts or network API calls are used by this interface. For research/educational use, not independent clinical decision-making.</footer>
+  </main>
+  <script src="./ipi.js" defer></script>
 </body>
 </html>
