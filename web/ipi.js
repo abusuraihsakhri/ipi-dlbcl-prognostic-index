@@ -11,13 +11,18 @@
       if (raw === "" || raw === null || raw === undefined || typeof raw === "boolean") {
         throw new Error(key + " is required and must be numeric");
       }
+      if (typeof raw === "string") {
+        const clean = raw.trim();
+        const format = key === "ldh_ratio" ? /^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$/ : /^[+-]?\\d+$/;
+        if (!format.test(clean)) throw new Error(key + " must have valid numeric format");
+      }
       const val = Number(raw);
       if (!Number.isFinite(val)) throw new Error(key + " must be finite");
       values[key] = val;
     }
     const {age, ldh_ratio, ecog_ps, stage, extranodal_sites} = values;
     for (const key of ["age", "ecog_ps", "stage", "extranodal_sites"]) {
-      if (!Number.isInteger(values[key])) throw new Error(key + " must be an integer");
+      if (!Number.isSafeInteger(values[key])) throw new Error(key + " must be an integer");
     }
     if (age < 0) throw new Error("Age must be non-negative");
     if (ldh_ratio < 0) throw new Error("LDH ratio must be non-negative");
