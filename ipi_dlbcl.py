@@ -29,6 +29,7 @@ License: MIT
 import argparse
 import csv
 import json
+import math
 import sys
 from typing import Dict, Any, Optional
 
@@ -78,7 +79,13 @@ def calculate_ipi(
     Returns:
         Dict with IPI score, risk group, R-IPI group, survival estimates.
     """
-    # Validate
+    # Reject malformed/non-finite numbers before any risk comparison.
+    for name, value in (("age", age), ("ecog_ps", ecog_ps),
+                        ("stage", stage), ("extranodal_sites", extranodal_sites)):
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"{name} must be an integer")
+    if isinstance(ldh_ratio, bool) or not isinstance(ldh_ratio, (int, float)) or not math.isfinite(ldh_ratio):
+        raise ValueError("LDH ratio must be a finite number")
     if age < 0:
         raise ValueError("Age must be non-negative")
     if ldh_ratio < 0:
@@ -161,34 +168,12 @@ def _ripi_group(score: int) -> str:
 
 
 def _recommendation(group: str, score: int) -> str:
-    """Generate treatment recommendation based on IPI risk group."""
-    if group == "Low":
-        return (
-            "Low-risk DLBCL. Excellent prognosis with standard R-CHOP "
-            "(rituximab, cyclophosphamide, doxorubicin, vincristine, prednisone) "
-            "× 6 cycles. 5-year overall survival ~73%. "
-            "Consider abbreviated therapy (4-6 cycles) in select patients."
-        )
-    elif group == "Low-Intermediate":
-        return (
-            "Low-intermediate risk DLBCL. Good prognosis with R-CHOP × 6 cycles. "
-            "5-year overall survival ~51%. Consider interim PET-adapted approach. "
-            "Consolidation radiation for residual disease."
-        )
-    elif group == "High-Intermediate":
-        return (
-            "High-intermediate risk DLBCL. Standard R-CHOP × 6-8 cycles. "
-            "5-year overall survival ~43%. Consider dose-adjusted EPOCH-R. "
-            "Evaluate for CNS prophylaxis. Clinical trial enrollment encouraged."
-        )
-    else:
-        return (
-            "High-risk DLBCL. Poor prognosis with standard therapy. "
-            "5-year overall survival ~26%. Consider intensified regimens "
-            "(DA-EPOCH-R, R-ACVBP). CNS prophylaxis recommended. "
-            "Early evaluation for CAR-T or stem cell transplant. "
-            "Clinical trial enrollment strongly encouraged."
-        )
+    """Non-prescriptive clinical context; the IPI is not a treatment algorithm."""
+    return (
+        f"IPI {score}/5 ({group} risk). This is a prognostic grouping, not a treatment "
+        "recommendation. Historical cohort survival estimates are not individualized "
+        "predictions; treatment requires current disease and patient-specific assessment."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +212,13 @@ def process_batch(input_csv: str, output_csv: str) -> int:
     if missing_fields:
         raise ValueError(f"Input CSV missing required fields: {missing_fields}")
 
+    if len(fieldnames) != len(set(fieldnames)):
+        raise ValueError("Input CSV contains duplicate column names")
+    conflicting = set(fieldnames) & {"ipi_score", "ipi_risk_group", "five_year_survival_pct",
+                                     "ripi_group", "clinical_recommendation"}
+    if conflicting:
+        raise ValueError(f"Input CSV contains reserved output column names: {sorted(conflicting)}")
+
     out_fields = fieldnames + [
         "ipi_score", "ipi_risk_group", "five_year_survival_pct",
         "ripi_group", "clinical_recommendation",
@@ -247,14 +239,19 @@ def process_batch(input_csv: str, output_csv: str) -> int:
             row_dict["five_year_survival_pct"] = res["five_year_survival_pct"]
             row_dict["ripi_group"] = res["ripi_group"]
             row_dict["clinical_recommendation"] = res["clinical_recommendation"]
-        except (ValueError, KeyError) as e:
+        except (ValueError, TypeError, KeyError) as e:
             row_dict = dict(r)
             row_dict["ipi_score"] = f"ERROR: {e}"
             row_dict["ipi_risk_group"] = ""
             row_dict["five_year_survival_pct"] = ""
             row_dict["ripi_group"] = ""
             row_dict["clinical_recommendation"] = ""
-        out_rows.append(row_dict)
+        # Prevent spreadsheet formula execution when CSV is opened in Excel/Sheets.
+        def safe_cell(value):
+            if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+                return "'" + value
+            return value
+        out_rows.append({key: safe_cell(row_dict.get(key, "")) for key in out_fields})
 
     with open(output_csv, mode="w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=out_fields)

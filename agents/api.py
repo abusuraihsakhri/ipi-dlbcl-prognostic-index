@@ -1,8 +1,11 @@
 """
 FastAPI REST API Server for Ipi Dlbcl Prognostic Index.
 """
+from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from ipi_dlbcl import calculate_ipi
 from pydantic import BaseModel
 from .base import AuditLogger, PHIGuard
 from .models import SystemTaskPayload, ConsensusDossier
@@ -53,3 +56,23 @@ def api_chat(req: ChatRequest):
 @app.get("/api/audit/logs")
 def api_audit_logs():
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
+
+
+class IPIPatient(BaseModel):
+    age: int
+    ldh_ratio: float
+    ecog_ps: int
+    stage: int
+    extranodal_sites: int
+
+
+@app.post("/api/ipi")
+def api_ipi(payload: IPIPatient):
+    try:
+        return calculate_ipi(**payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+# Serve the same dependency-free calculator as GitHub Pages.
+app.mount("/", StaticFiles(directory=str(Path(__file__).resolve().parent.parent / "web"), html=True), name="calculator")
