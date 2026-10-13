@@ -39,6 +39,6 @@ jobs:
           node --test tests/test_web.cjs
       - name: Basic static security check
         run: |
-          if grep -R -En '(eval\\(|document\\.write\\(|innerHTML\\s*=)' web; then
+          if grep -R -En '(eval\(|document\.write\(|innerHTML[[:space:]]*=)' web; then
             echo "Potentially unsafe DOM pattern found"; exit 1
           fi
