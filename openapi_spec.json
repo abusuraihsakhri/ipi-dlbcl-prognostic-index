@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Ipi Dlbcl Prognostic Index API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
+    "title": "IPI DLBCL Prognostic Index API",
+    "description": "Original IPI and R-IPI prognostic scoring, with token-protected deterministic supervisory mock tools. The running FastAPI service /openapi.json is authoritative.",
+    "version": "3.1.0",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
       "url": "https://github.com/abusuraihsakhri"
@@ -25,7 +25,7 @@
         "summary": "Prometheus operational metrics",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "JSON operational counters (not Prometheus text)"
           }
         }
       }
@@ -70,8 +70,19 @@
         "responses": {
           "200": {
             "description": "Consensus dossier with HMAC signature"
+          },
+          "401": {
+            "description": "Invalid or missing supervisor token"
+          },
+          "503": {
+            "description": "Supervisor API disabled without server-side token"
           }
-        }
+        },
+        "security": [
+          {
+            "SupervisorToken": []
+          }
+        ]
       }
     },
     "/api/chat": {
@@ -97,8 +108,19 @@
         "responses": {
           "200": {
             "description": "Supervisory response"
+          },
+          "401": {
+            "description": "Invalid or missing supervisor token"
+          },
+          "503": {
+            "description": "Supervisor API disabled without server-side token"
           }
-        }
+        },
+        "security": [
+          {
+            "SupervisorToken": []
+          }
+        ]
       }
     },
     "/api/audit/logs": {
@@ -107,6 +129,96 @@
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
+          },
+          "401": {
+            "description": "Invalid or missing supervisor token"
+          },
+          "503": {
+            "description": "Supervisor API disabled without server-side token"
+          }
+        },
+        "security": [
+          {
+            "SupervisorToken": []
+          }
+        ]
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Serve browser calculator",
+        "responses": {
+          "200": {
+            "description": "HTML calculator"
+          }
+        }
+      }
+    },
+    "/api/ipi": {
+      "post": {
+        "summary": "Compute IPI and R-IPI",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPIPatient"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prognostic risk stratification"
+          },
+          "422": {
+            "description": "Invalid clinical input"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SupervisorToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Token",
+        "description": "Set SUPERVISOR_API_TOKEN on server; never embed this token in client code."
+      }
+    },
+    "schemas": {
+      "IPIPatient": {
+        "type": "object",
+        "required": [
+          "age",
+          "ldh_ratio",
+          "ecog_ps",
+          "stage",
+          "extranodal_sites"
+        ],
+        "properties": {
+          "age": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ldh_ratio": {
+            "type": "number",
+            "minimum": 0
+          },
+          "ecog_ps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "stage": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "extranodal_sites": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       }
